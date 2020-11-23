@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="./plugin/layui-v2.5.6/css/layui.css" media="all">
+		<style>
+			.main-content{
+				padding: 16px 18px;
+			}
+			.selection-list input,.selection-list span{
+				display: inline-block;
+			}
+			.selection-list input{
+				max-width: 400px;
+			}
+			.selection-list-item{
+				margin: 8px 0;
+			}
+			.selection-list-item>span,.selection-list-item .issue-input{
+				font-weight: bold;
+			}
+			.selection-list-item .issue-input,.selection-list-item .issue-num{
+				border-width: 0 0 1px 0;
+				font-size: 14px;
+			}
+			.selection-list-item .issue-input{
+				border-radius: 0;
+				max-width: 420px;
+			}
+			.selection-items{
+				margin-left: 20px;
+			}
+			.selection-items .btn-delete-input{
+				color: #FF5722;
+				background-color: transparent;
+			}
+			.main-content .form-btn-large{
+				margin-top: 30px;
+			}
+			.selection-list-item{
+				margin: 8px 0;
+			}
+			.selection-list-item>span,.selection-list-item .issue-input{
+				font-weight: bold;
+			}
+			.selection-list-item .issue-input,.selection-list-item .issue-num,.issue-title input{
+				border-width: 0 0 1px 0;
+				font-size: 14px;
+			}
+			.selection-list-item .issue-input,.issue-title .layui-input{
+				border-radius: 0;
+				max-width: 420px;
+				display: inline-block;
+			}
+			.selection-items{
+				margin-left: 20px;
+			}
+			.selection-items .btn-delete-input{
+				color: #FF5722;
+				background-color: transparent;
+			}
+			.main-content .form-btn-large{
+				margin-top: 30px;
+			}
+			.issue-title{
+				margin-bottom: 20px;
+			}
+			.issue-title,.issue-title .layui-input{
+				font-size: 16px;
+				font-weight: bold;
+			}
+			/** 线性btn 同时加上类名layui-btn-primary */
+			.line-btn .my-btn-danger,.line-btn .my-btn-danger:hover{
+			    border-color: #FF5722;
+			    color:#FF5722;
+			}
+			.line-btn .my-btn-normal,.line-btn .my-btn-normal:hover{
+			    border-color: #01AAED;
+			    color:#01AAED
+			}
+			.line-btn .my-btn-primary,.line-btn .my-btn-primary:hover{
+			    border-color: #009688;
+			    color:#009688;
+			}
+			/*文本对齐方式*/
+			.textCenter{text-align: center;}
+		</style>
+	</head>
+	<body>		
+		<!-- 右侧主要内容 -->
+		<div class="rightinfo" style="padding: 0">		    
+		    <div class="main-content">
+		        <div class="issue-title textCenter">
+		            问卷标题：<input type="text" name="title" placeholder="请输入问卷标题" class="layui-input">
+		        </div>
+		        <div id="question-list">
+		            <div class="line-btn add-first-item" style="display: none">
+		                <button type="button" data-method="addFirstItem" class="layui-btn layui-btn-primary my-btn-primary">新增问题</button>
+		            </div>
+		            <div class="issue-list">
+		                <div class="selection-list">
+		                    <div class="selection-list-item">
+		                        <span class="issue-num">Q、</span>
+		                        <input type="text" placeholder="请输入题目" class="layui-input issue-input">
+		                    </div>
+		                </div>
+		                <div class="selection-list selection-items">
+		                    <div class="selection-list-item">
+		                        <span>A：</span>
+		                        <input type="text" placeholder="选项" class="layui-input">
+		                        <button type="button" data-method="delInput" class="layui-btn btn-delete-input">删除</button>
+		                    </div>
+		                </div>
+		                <div class="textCenter line-btn">
+		                    <button type="button" data-method="deleteItem" class="layui-btn layui-btn-primary my-btn-danger">删除问题</button>
+		                    <button type="button" data-method="addInput" class="layui-btn layui-btn-primary my-btn-normal">添加选项</button>
+		                    <button type="button" data-method="addItem" class="layui-btn layui-btn-primary my-btn-primary">此题后新增</button>
+		                </div>
+		            </div>
+		        </div>
+		        <div class="textCenter form-btn-large">
+		            <button type="button" class="layui-btn layui-btn-primary" onclick="">返回上一步</button>
+		            <button type="button" class="layui-btn" onclick="saveQuestionList()">保存</button>
+		        </div>
+		    </div>
+		</div>
+		<script type="text/javascript" src="./plugin/jquery-3.5.1/jquery-3.5.1.min.js"></script>
+		<script type="text/javascript" src="./plugin/layui-v2.5.6/layui.all.js"></script>
+		<script>
+		    layui.use('layer', function(){
+		        var $ = layui.jquery, layer = layui.layer;
+		        //新增问题模板
+		        var newItem =
+		            '<div class="issue-list">\n' +
+		            '\t<div class="selection-list">\n' +
+		            '\t\t<div class="selection-list-item">\n' +
+		            '\t\t\t<span>Q、</span>\n' +
+		            '\t\t\t<input type="text" placeholder="请输入题目" class="layui-input issue-input">\n' +
+		            '\t\t</div>\n' +
+		            '\t</div>\n' +
+		            '\t<div id="selection-items" class="selection-list selection-items">\n' +
+		            '\t\t<div class="selection-list-item">\n' +
+		            '\t\t\t<span>A：</span>\n' +
+		            '\t\t\t<input type="text" placeholder="选项" class="layui-input">\n' +
+		            '\t\t\t<button type="button" data-method="delInput" class="layui-btn btn-delete-input">删除</button>\n' +
+		            '\t\t</div>\n' +
+		            '\t</div>\n' +
+		            '\t<div class="textCenter line-btn">\n' +
+		            '\t\t<button type="button" data-method="deleteItem" class="layui-btn layui-btn-primary my-btn-danger">删除问题</button>\n' +
+		            '\t\t<button type="button" data-method="addInput" class="layui-btn layui-btn-primary my-btn-normal">添加选项</button>\n' +
+		            '\t\t<button type="button" data-method="addItem" class="layui-btn layui-btn-primary my-btn-primary">此题后新增</button>\n' +
+		            '\t</div>\n' +
+		            '</div>';
+		        var active = {
+		            // 新增选项
+		            addInput: function (othis) {
+		                var itemLength = othis.parent().parent().children('.selection-items').children('.selection-list-item').length;
+		                if(itemLength >=10){
+		                    layer.msg('选项不得超过10个',{time: 2000});
+		                    return;
+		                };
+		                var letterArr = ['A','B','C','D','E','F','G','H','I','J'];
+		                var newInput =
+		                    '<div class="selection-list-item">\n' +
+		                    '\t<span>'+letterArr[itemLength]+'：</span>\n' +
+		                    '\t<input type="text" placeholder="选项" class="layui-input">\n' +
+		                    '\t<button type="button" data-method="delInput" class="layui-btn btn-delete-input">删除</button>\n'+
+		                    '</div>';
+		                othis.parent().parent().find('.selection-items').append(newInput);
+		            },
+		            //删除选项
+		            delInput: function (othis) {
+		                othis.parent().remove();
+		            },
+		            //新增问题
+		            addItem: function (othis) {
+		                // var itemLength = $('#question-list>.issue-list').length+1;
+		                othis.parent().parent().after(newItem);
+		            },
+		            //删除问题
+		            deleteItem: function (othis) {
+		                var itemLength = $('#question-list>.issue-list').length;
+		                if(itemLength<=1){
+		                    $('.add-first-item')[0].style.display = 'block';
+		                }
+		                othis.parent().parent().remove();
+		            },
+		            addFirstItem: function () {
+		                $("#question-list").append(newItem);
+		                $('.add-first-item')[0].style.display = 'none';
+		            }
+		        };
+		        //动态加载元素用
+		        $('#question-list').on('click','.layui-btn', function () {
+		            var othis = $(this), method = othis.data('method');
+		            active[method].call(this, othis);
+		        });
+		    });
+		    /** 点击保存问卷，获取所有问题信息列表 */
+		    function saveQuestionList() {
+		        var questionArr = [];
+		        var issues = $('#question-list').find('.issue-list'); // 获取所有文本框
+		        for (var i = 0; i < issues.length; i++) {
+		            var _issue = {};
+		
+		            var subArr = ['Q','A','B','C','D','E','F','G','H','I','J']
+		            var selection = issues.eq(i).find('input[type="text"]'); // 获取所有文本框
+		            for(var j = 0;j< selection.length; j++){
+		                _issue[subArr[j]] = selection.eq(j).val();
+		                questionArr.push(_issue); // 将文本框的值添加到数组中
+		            }
+		        }
+		        if(questionArr.length<=0){
+		            layer.msg('您当前未创建任何问题哦',{time: 2000});
+		        }
+		        console.log('问卷标题：',$('input[name="title"]').val())
+		        console.log('得到最终的问题列表',questionArr)
+		    }
+		</script>
+	</body>
+</html>
+
